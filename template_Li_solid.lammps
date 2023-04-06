@@ -1,0 +1,37 @@
+# 1) Initalisation
+units               metal
+dimension           3
+atom_style          atomic
+
+boundary            p p p
+
+# 2) System Definition
+
+lattice             bcc XXXXX orient x 1 0 0 orient y 0 1 0 orient z 0 0 1 origin 0.0 0.0 0.0
+region              cbox block 0.5 80.5 0 5 0 5 units lattice
+create_box          1 cbox
+create_atoms        1 region cbox
+
+mass                1 6.94
+
+velocity all create 500.0 12345 #creates random velocities at 300 K
+
+pair_style       eam/alloy
+pair_coeff        * * pot.eam Li
+
+#dump                mydmp all atom 100 LiBccVis.lammpstrj
+
+fix                 1 all nvt temp 100 300 0.3
+fix 2 all recenter INIT INIT INIT
+
+compute             myMSD all msd com yes
+thermo_style        custom step time atoms temp pe ke etotal press vol enthalpy c_myMSD[4]
+
+
+# 3) Execution parametres
+timestep            0.001
+thermo              1000
+run                 1000000
+
+write_data          data.bcc
+write_dump all xyz data_solid.xyz

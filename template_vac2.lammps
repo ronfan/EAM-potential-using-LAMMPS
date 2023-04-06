@@ -1,0 +1,14 @@
+units               metal
+dimension           3
+atom_style          atomic
+
+boundary            p p p
+
+# 2) System Definition
+lattice none XXXXX
+region              vac block 80.5 81.0 0 5 0 5 units lattice
+create_box          1 vac
+
+mass                1 6.94
+
+write_data          data.vac2

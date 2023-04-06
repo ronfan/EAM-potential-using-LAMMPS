@@ -1,0 +1,43 @@
+# 1) Initalisation
+units               metal
+dimension           3
+
+pair_style          eam/alloy
+boundary            p p p
+
+read_data           data.bcc 
+read_data           data.vac2 add append
+read_data           data.liquid add append
+read_data           data.vac1 add append
+
+
+lattice             bcc XXXXX orient x 1 0 0 orient y 0 1 0 orient z 0 0 1 origin 0.0 0.0 0.0
+region              lbox block 86.0 96.0 0 5 0 5 units lattice
+region              cbox block 35.5 45.5 0 5 0 5 units lattice
+
+group liquid region lbox
+group solid region cbox
+
+
+pair_coeff          * * pot.eam Li
+fix                 1 all nve
+fix 2 all recenter INIT INIT INIT
+
+dump                mydmp all atom 1000 LiExpVis_freezing.lammpstrj
+write_dump all xyz data_exper_initial.xyz
+
+compute             myMSD all msd com yes
+compute             lMSD liquid msd com yes
+compute             cMSD solid msd com yes
+compute             ltemp liquid temp
+compute             ctemp solid temp
+thermo_style        custom step time atoms density temp pe ke etotal pxx pyy pzz pxy pxz pyz press vol fmax enthalpy c_myMSD[4] c_lMSD[4] c_cMSD[4] c_ltemp c_ctemp
+
+
+timestep            0.00025
+thermo              1000
+restart 10000000 restart.input 
+run                 1000000
+
+write_data data.finished
+write_dump all xyz data_exper.xyz
